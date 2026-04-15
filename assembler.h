@@ -70,7 +70,8 @@ private:
 
     //Output (makes easier for debugging)
     bool writeIntermediateFile(const std::string& sourceFilename) const;
-    bool writeSymtabFile(const std::string& sourceFilename) const;
+    //After the symtab table is implemented, uncomment
+    //bool writeSymtabFile(const std::string& sourceFilename) const;
 
     //
     void addLiteralIfNeeded(const std::string& operand);
@@ -89,3 +90,4 @@ private:
 };
 
 #endif
+

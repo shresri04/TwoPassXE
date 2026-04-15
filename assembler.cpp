@@ -223,6 +223,7 @@ void Assembler::addLiteralIfNeeded(const string& operand) {
 
     LiteralEntry entry;
     entry.literal = operand;
+    bool valid = false;
 
     string body = operand.substr(1);
 
@@ -237,6 +238,7 @@ void Assembler::addLiteralIfNeeded(const string& operand) {
                 hexValue += intToHex(static_cast<unsigned char>(c), 2);
             }
             entry.valueHex = hexValue;
+            valid = true; //made fix to ensure validity
         } else if (type == 'X' || type == 'x') {
             entry.length = static_cast<int>(inside.size()) / 2;
             entry.valueHex = toUpper(inside);
@@ -244,9 +246,10 @@ void Assembler::addLiteralIfNeeded(const string& operand) {
     } else if (isNumber(body)) {
         entry.length = 3;
         entry.valueHex = intToHex(stoi(body), 6);
+        valid = true;
     }
 
-    littab.push_back(entry);
+    if(valid) littab.push_back(entry);
 }
 
 //assign addresses to all unassigned literals
@@ -299,7 +302,7 @@ bool Assembler::pass1() {
     programName = "";
 
     int locctr = 0;
-    bool firstLine = false;
+    bool seenFirstLine = false;
 
     for (size_t i = 0; i < lines.size(); ++i) {
         SourceLine& line = lines[i];
@@ -309,8 +312,8 @@ bool Assembler::pass1() {
         }
 
         //First line
-        if (!firstLine) {
-            firstLine = true;
+        if (!seenFirstLine) {
+            seenFirstLine = true;
 
             if (line.opcode == "START") {
                 if (!line.label.empty()) {
@@ -426,13 +429,6 @@ bool Assembler::pass1() {
  * ========================= END OF Pass 1========================
  * ============================================================
  */
-
-
- /* ============================================================
- * ========================= Pass 2 ==========================
- * ============================================================
- */
-
 //Driver for pass 1
 bool Assembler::writeIntermediateFile(const string& sourceFilename) const {
     string outName = getBaseName(sourceFilename) + ".int";
@@ -473,9 +469,6 @@ bool Assembler::writeIntermediateFile(const string& sourceFilename) const {
 
 }
 
-//Create symbol/literal table file here//
-
-//Create symbol/literal table file here//
 
 
 
@@ -512,3 +505,16 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
+
+
+//Create symbol/literal table file here//
+
+//Create symbol/literal table file here//
+
+
+
+ /* ============================================================
+ * ========================= Pass 2 ==========================
+ * ============================================================
+ */
+
