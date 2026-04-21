@@ -90,7 +90,7 @@ LESSONS LEARNED:
 
 	- This assignment reinforced the concepts behind two pass assemblers and
 	  why they are necessary in order to resolve symbols.
-	- How the LITTAB defers adress assignment until LTORG / END.
+	- How the LITTAB defers address assignment until LTORG / END.
 	- Small typos in method names can cause hard to diagnose linker errors 
 	  not just obvious compile errors. (assemblerFormat2 vs assembleFormat2)
 		
