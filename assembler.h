@@ -1,3 +1,14 @@
+/*
+ * CS530 Assignment 2 - Limited XE Assembler
+ *
+ *	Team:
+ *		Lucas Fredricks (cssc2518)
+ *		Shreya Sridharan (cssc2550)
+ *
+ *	assembler.h
+ *
+ */
+
 #ifndef ASSEMBLER_H
 #define ASSEMBLER_H
 #include <string>
@@ -47,6 +58,7 @@ class Assembler {
 public:
     Assembler();
     bool runPass1(const std::string& filename);
+	bool runPass2(const std::string& filename);
 
 private:
     std::vector<SourceLine> lines;
@@ -59,6 +71,12 @@ private:
     int programLength = 0;
     std::string programName;
 
+	std::vector<std::string> objectCodes;
+
+	//base register state
+	int baseValue = 0;
+	bool baseSet = false;
+
     void initOptab();
     void initDirectives();
 
@@ -68,10 +86,26 @@ private:
     // Pass 1
     bool pass1();
 
+	// Pass 2
+	bool pass2();
+	void injectLiteralLines();
+	std::string assembleInstruction(SourceLine& line, int pc);
+	std::string assembleFormat1(const OpInfo& op);
+	std::string assembleFormat2(const OpInfo& op, const std::string& operand, SourceLine& line);
+	std::string assembleFormat3or4(SourceLine& line, const OpInfo& op, int pc, bool format4);
+	std::string assembleByte(const std::string& operand) const;
+	std::string assembleWord(const std::string& operand) const;
+
+
     //Output (makes easier for debugging)
     bool writeIntermediateFile(const std::string& sourceFilename) const;
+<<<<<<< HEAD
     //After the symtab table is implemented, uncomment
     //bool writeSymtabFile(const std::string& sourceFilename) const;
+=======
+    bool writeSymtabFile(const std::string& sourceFilename) const;
+	bool writeListingFile(const std::string& operand) const;
+>>>>>>> 095df4baa40f652f5afcc31f91e6637b52fde365
 
     //
     void addLiteralIfNeeded(const std::string& operand);
@@ -90,4 +124,7 @@ private:
 };
 
 #endif
+<<<<<<< HEAD
 
+=======
+>>>>>>> 095df4baa40f652f5afcc31f91e6637b52fde365
