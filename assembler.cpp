@@ -260,13 +260,16 @@ void Assembler::addLiteralIfNeeded(const string& operand) {
             entry.valueHex = hexValue;
             valid = true; //made fix to ensure validity
         } else if (type == 'X' || type == 'x') {
-            entry.length = static_cast<int>(inside.size()) / 2;
-            entry.valueHex = toUpper(inside);
+            if (inside.size() % 2 == 0) {
+                entry.length = static_cast<int>(inside.size()) / 2;
+                entry.valueHex = toUpper(inside);
+                valid = true;
+            }
+        } else if (isNumber(body)) {
+            entry.length = 3;
+            entry.valueHex = intToHex(stoi(body), 6);
+            valid = true;
         }
-    } else if (isNumber(body)) {
-        entry.length = 3;
-        entry.valueHex = intToHex(stoi(body), 6);
-        valid = true;
     }
 
     if(valid) littab.push_back(entry);
@@ -479,16 +482,7 @@ bool Assembler::pass1() {
  * ========================= END OF Pass 1========================
  * ============================================================
  */
-<<<<<<< HEAD
-=======
 
-
-/* ============================================================
- * ========================= Pass 2 ==========================
- * ============================================================
- */
-
->>>>>>> 095df4baa40f652f5afcc31f91e6637b52fde365
 //Driver for pass 1
 bool Assembler::writeIntermediateFile(const string& sourceFilename) const {
     string outName = getBaseName(sourceFilename) + ".int";
@@ -529,9 +523,6 @@ bool Assembler::writeIntermediateFile(const string& sourceFilename) const {
 
 }
 
-<<<<<<< HEAD
-
-
 
 
 /* - read file
@@ -539,11 +530,10 @@ bool Assembler::writeIntermediateFile(const string& sourceFilename) const {
  * - write intermediate file
  * - write symbol/literal table file
  */
-=======
->>>>>>> 095df4baa40f652f5afcc31f91e6637b52fde365
 bool Assembler::runPass1(const string& filename) {
     if (!readSourceFile(filename)) return false;
     if (!pass1()) return false;
+    if (!writeIntermediateFile(filename)) return false;
     if (!writeSymtabFile(filename)) return false;
     return true;
 }
@@ -572,14 +562,4 @@ int main(int argc, char* argv[]) {
 }
 
 
-//Create symbol/literal table file here//
-
-//Create symbol/literal table file here//
-
-
-
- /* ============================================================
- * ========================= Pass 2 ==========================
- * ============================================================
- */
 

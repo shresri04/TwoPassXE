@@ -345,7 +345,7 @@ string Assembler::assembleFormat3or4(SourceLine& line, const OpInfo& op, int pc,
 	//Literal: resolve with LITTAB
 	else if(po.isLiteral) {
 		const LiteralEntry* lit = findLiteral(littab, po.symbol);
-		if (!lit | !lit->assigned) {
+		if (!lit || !lit->assigned) {
 			line.hasError = true;
 			line.errorMessage = "Undefined or unsigned literal: " + po.symbol;
 			return "";

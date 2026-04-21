@@ -99,13 +99,12 @@ private:
 
     //Output (makes easier for debugging)
     bool writeIntermediateFile(const std::string& sourceFilename) const;
-<<<<<<< HEAD
+
     //After the symtab table is implemented, uncomment
     //bool writeSymtabFile(const std::string& sourceFilename) const;
-=======
+
     bool writeSymtabFile(const std::string& sourceFilename) const;
-	bool writeListingFile(const std::string& operand) const;
->>>>>>> 095df4baa40f652f5afcc31f91e6637b52fde365
+	bool writeListingFile(const std::string& sourceFilename) const;
 
     //
     void addLiteralIfNeeded(const std::string& operand);
@@ -124,7 +123,3 @@ private:
 };
 
 #endif
-<<<<<<< HEAD
-
-=======
->>>>>>> 095df4baa40f652f5afcc31f91e6637b52fde365
