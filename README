@@ -1,0 +1,99 @@
+Team:           Lucas Fredricks, Shreya Sridharan
+Accounts:        cssc2518, cssc2550
+Class:          CS 530, Spring 2026
+Assignment:     Assignment #2, Two Pass SIC/XE Assembler
+Filename:       README
+
+
+FILE MANIFEST:
+
+  README              - Current file
+  Makefile            - Build script: produces ./lxe executable
+  assembler.h         - Class declaration for Assembler and all data structures
+  assembler.cpp       - Constructor, optab/directive init, utility functions,
+						parseLine, readSourceFile, literal helpers, Pass 1,
+                        intermediate file writer, runPass1, main
+  pass2.cpp           - Pass 2: assembleFormat1/2/3or4, assembleInstruction,
+                        injectLiteralLines, pass2, runPass2
+  symtab_output.cpp   - writeSymtabFile: dumps sorted SYMTAB and LITTAB to .st
+  listing.cpp         - writeListingFile: generates .l listing with object codes
+  testFiles/
+	fig1_15.sic		  - Textbook example of sic file for testing
+	fig1_9.sic		  - Textbook example of sic file for testing
+	P2sample.sic	  - Example  . sic file provided by assignment
+	P2sample.l		  - Provided .l file to cross check against own results
+	P2sample.st		  - Provided .st file to cross check against own results
+
+
+COMPILE INSTRUCTIONS:
+
+  Requires a C++17-capable compiler (g++ 7+ recommended) and GNU make.
+
+  To build:
+      make
+
+  To remove build artifacts:
+      make clean
+
+  This produces the executable: ./lxe
+
+OPERATING INSTRUCTIONS:
+ 
+ Usage:
+      ./lxe <source_file.sic>
+
+  Arguments:
+      <source_file.sic>   Path to a SIC/XE assembly source file (required)
+
+  Output files (written to the same directory as the source file):
+      <basename>.st       Symbol/literal table dump (sorted SYMTAB + LITTAB)
+      <basename>.l        Listing file -- line numbers, addresses, object codes,
+                          and source text (produced after Pass 2)
+
+
+DESIGN DECISIONS:
+
+  1. Single Assembler class split across four .cpp files
+     The entire assembler lives in one class (declared in assembler.h) but its
+     implementation is divided by responsibility: Pass 1, Pass 2, symbol-table
+     output, and listing output. This keeps each file focused without
+     introducing multiple classes or a complex module hierarchy.
+
+  2. Intermediate file used to bridge passes
+     Pass 1 writes a .int file and populates an in-memory lines[] vector.
+     Pass 2 operates on that same vector (plus the populated SYMTAB/LITTAB),
+     matching the classic two-pass assembler model described in the textbook.
+
+  3. Literal pool (LITTAB) with deferred address assignment
+     Literals are collected during Pass 1 and assigned addresses only when an
+     LTORG directive is encountered. injectLiteralLines() inserts
+     synthetic *LTORG* entries into lines[] so Pass 2 can emit object code for
+     them in the correct position.
+
+  4. PC-relative preferred, base-relative fallback (Format 3/4)
+     assembleFormat3or4() first attempts PC-relative displacement; if out of
+     range and BASE has been set, it falls back to base-relative. Format 4
+     (extended) bypasses both and uses a 20-bit absolute address with the e-bit
+     set.
+
+  5. Addressing mode flags parsed from operand string parseOperand()
+	 strips #, @, and ,X from the raw operand text and sets
+     boolean flags (immediate, indirect, indexed), separating operand
+	 parsing cleanly from instruction encoding.
+
+
+KNOWN DEFICIENCIES / BUGS:
+
+	- None known at this time.
+
+LESSONS LEARNED:
+
+	- This assignment reinforced the concepts behind two pass assemblers and
+	  why they are necessary in order to resolve symbols.
+	- How the LITTAB defers adress assignment until LTORG / END.
+	- Small typos in method names can cause hard to diagnose linker errors 
+	  not just obvious compile errors. (assemblerFormat2 vs assembleFormat2)
+		
+
+
+
