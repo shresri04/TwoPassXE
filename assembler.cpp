@@ -1,3 +1,14 @@
+/*
+ * CS530 Assignment 2 - Limited XE Assembler
+ *
+ *	Team:
+ *		Lucas Fredricks (cssc2518)
+ *		Shreya Sridharan (cssc2550)
+ *
+ *	assembler.cpp
+ *
+ */
+
 #include "assembler.h"
 #include <iostream>
 #include <fstream>
@@ -132,10 +143,8 @@ string Assembler::intToHex(int value, int width) {
     return ss.str();
 }
 
-/*
- * Get filename without path and extension.
- * Example: tests/prog.sic -> prog
- */
+
+// Get filename without path and extension
 string Assembler::getBaseName(const string& filename) {
     size_t slash = filename.find_last_of("/\\");
     string base = (slash == string::npos) ? filename : filename.substr(slash + 1);
@@ -144,9 +153,8 @@ string Assembler::getBaseName(const string& filename) {
     return base;
 }
 
+
 //Parse line by line into label / opcode / operand.
-
-
 SourceLine Assembler::parseLine(const string& text, int lineNumber) const {
     SourceLine line;
     line.originalLine = text;
@@ -157,13 +165,13 @@ SourceLine Assembler::parseLine(const string& text, int lineNumber) const {
         line.isComment = true;
         return line;
     }
-    //If a line begins with '.' => comment line
+    //If line begins with '.' => comment line
     if (text[0] == '.') {
         line.isComment = true;
         line.comment = text;
         return line;
     }
-    //If a line begins with whitespace => no label
+    //If line begins with whitespace => no label
     bool startsWithSpace = isspace(static_cast<unsigned char>(text[0]));
 
     vector<string> tokens;
@@ -188,6 +196,18 @@ SourceLine Assembler::parseLine(const string& text, int lineNumber) const {
         line.operand = tokens.size() >= 3 ? tokens[2] : "";
     }
 
+    // lit pool entry: "* =C'EOF'" — label is *, 2nd token is the lit
+    // shift to operand then clear opcode so pass 1 & 2 can detect by label 
+    if (line.label == "*") {
+        line.operand = line.opcode; 
+        line.opcode = "";
+        if (line.operand.empty() || line.operand[0] != '=') {
+            line.hasError = true;
+            line.errorMessage = "Literal-pool entry operand must begin with =";
+        }
+        return line;
+    }
+
     line.opcode = toUpper(line.opcode);
     return line;
 }
@@ -197,7 +217,7 @@ bool Assembler::readSourceFile(const string& filename) {
     lines.clear();
 
     ifstream in(filename);
-    if (!in) {
+	if (!in) {
         cerr << "Error: Can't open file '" << filename << "'\n";
         return false;
     }
@@ -305,6 +325,36 @@ bool Assembler::pass1() {
         SourceLine& line = lines[i];
 
         if (line.isComment) {
+            continue;
+        }
+
+        // Lit pool entry:
+		// label: "*"
+		// opcode=""
+        if (line.label == "*") {
+            if (!line.hasError) {
+                addLiteralIfNeeded(line.operand);
+                bool found = false;
+                for (auto& lit : littab) {
+                    if (lit.literal == line.operand) {
+                        if (lit.assigned && lit.address != locctr) {
+                            line.hasError = true;
+                            line.errorMessage = "Literal already placed at " + intToHex(lit.address, 4);
+                        } else {
+                            lit.address = locctr;
+                            lit.assigned = true;
+                            line.address = locctr;
+                            locctr += lit.length;
+                        }
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    line.hasError = true;
+                    line.errorMessage = "Unable to resolve literal length for: " + line.operand;
+                }
+            }
             continue;
         }
 
@@ -428,7 +478,7 @@ bool Assembler::pass1() {
  */
 
 
- /* ============================================================
+/* ============================================================
  * ========================= Pass 2 ==========================
  * ============================================================
  */
@@ -473,42 +523,32 @@ bool Assembler::writeIntermediateFile(const string& sourceFilename) const {
 
 }
 
-//Create symbol/literal table file here//
-
-//Create symbol/literal table file here//
-
-
-
-
-/* - read file
- * - perform Pass 1
- * - write intermediate file
- * - write symbol/literal table file
- */
 bool Assembler::runPass1(const string& filename) {
     if (!readSourceFile(filename)) return false;
     if (!pass1()) return false;
-    if (!writeIntermediateFile(filename)) return false;
     if (!writeSymtabFile(filename)) return false;
     return true;
 }
 
-//Test Pass 1
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         cout << "lxe: no source files were provided.\n";
         cout << "Please run the program again with one or more SIC/XE source files.\n";
-        return 0;
+        return 1;
     }
+	
+	//setting i=0 results in listing files also being made for lxe
+	for (int i = 1; i < argc; ++i) {
+		Assembler assembler; // new obj for each file
 
-    Assembler assembler;
-
-    for (int i = 1; i < argc; ++i) {
-        cout << "Running Pass 1 on " << argv[i] << "...\n";
-        if (!assembler.runPass1(argv[i])) {
-            cerr << "Pass 1 failed for file: " << argv[i] << "\n";
-        }
-    }
+		if (!assembler.runPass1(argv[i])) {
+			cerr << "Pass 1 failed for: " << argv[i] << "\n";
+			continue;
+		}
+		if (!assembler.runPass2(argv[i])) {
+			cerr << "Pass 2 failed for: " << argv[i] << "\n";
+		}
+	}
 
     return 0;
 }
